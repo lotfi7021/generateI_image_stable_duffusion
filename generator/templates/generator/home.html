@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS • Free AI Art Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Exo+2:wght@300;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00ffff;
+            --secondary: #ff00ff;
+            --dark: #0a0a1f;
+            --glass: rgba(15, 15, 40, 0.7);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Exo 2', sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .floating-particles {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .particle {
+            position: absolute;
+            background: var(--primary);
+            border-radius: 50%;
+            opacity: 0.6;
+            animation: float 20s infinite linear;
+        }
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); }
+            100% { transform: translateY(-100px) rotate(360deg); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 10;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 60px 20px;
+            text-align: center;
+        }
+        h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: 4.5rem;
+            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--primary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+            animation: glow 3s ease-in-out infinite alternate;
+            margin-bottom: 10px;
+        }
+        @keyframes glow { from { filter: hue-rotate(0deg); } to { filter: hue-rotate(360deg); } }
+
+        .subtitle {
+            font-size: 1.4rem;
+            margin-bottom: 50px;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .input-box {
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            border-radius: 25px;
+            padding: 40px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            box-shadow: 0 20px 50px rgba(0, 255, 255, 0.15);
+            transition: all 0.4s ease;
+        }
+        .input-box:hover { transform: translateY(-10px); box-shadow: 0 30px 80px rgba(0, 255, 255, 0.3); }
+
+        form {
+            display: flex;
+            gap: 15px;
+            max-width: 800px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        input[type="text"] {
+            flex: 1;
+            min-width: 300px;
+            padding: 18px 25px;
+            font-size: 1.2rem;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid var(--primary);
+            border-radius: 50px;
+            color: white;
+            outline: none;
+            transition: all 0.3s;
+        }
+        input[type="text"]::placeholder { color: rgba(255,255,255,0.6); }
+        input[type="text"]:focus {
+            border-color: var(--secondary);
+            box-shadow: 0 0 25px rgba(255, 0, 255, 0.6);
+            transform: scale(1.02);
+        }
+
+        button {
+            padding: 18px 40px;
+            font-size: 1.3rem;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 50px;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.4s;
+            box-shadow: 0 10px 30px rgba(0, 255, 255, 0.4);
+        }
+        button:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 20px 40px rgba(255, 0, 255, 0.6);
+        }
+
+        .result {
+            margin-top: 60px;
+            animation: fadeInUp 1s ease;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        img {
+            max-width: 100%;
+            border-radius: 20px;
+            border: 3px solid var(--primary);
+            box-shadow: 0 0 60px rgba(0, 255, 255, 0.6);
+            transition: all 0.5s;
+        }
+        img:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 100px rgba(255, 0, 255, 0.8);
+        }
+
+        .loading {
+            font-size: 2rem;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%,100% { opacity: 0.7; } 50% { opacity: 1; } }
+
+        .error {
+            background: rgba(255,0,0,0.2);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid #ff0066;
+            margin-top: 30px;
+        }
+
+        .examples {
+            margin-top: 40px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .example-btn {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid var(--primary);
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .example-btn:hover {
+            background: var(--primary);
+            color: black;
+            transform: translateY(-3px);
+        }
+
+        footer {
+            margin-top: 100px;
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="floating-particles" id="particles"></div>
+
+    <div class="container">
+        <h1>NEXUS</h1>
+        <p class="subtitle">Free Unlimited AI Art • Powered by Stable Diffusion 3.5 Turbo</p>
+
+        <div class="input-box">
+            <form method="post">
+                {% csrf_token %}
+                <input type="text" name="prompt" placeholder="Dream it → I create it..." required autofocus>
+                <button type="submit">CREATE MAGIC</button>
+            </form>
+
+            <div class="examples">
+                <div class="example-btn" onclick="setPrompt('cyberpunk city at midnight, neon lights, rain')">Cyberpunk City</div>
+                <div class="example-btn" onclick="setPrompt('cute baby dragon flying over candy kingdom')">Candy Dragon</div>
+                <div class="example-btn" onclick="setPrompt('astronaut riding a unicorn on the moon, 8k')">Moon Unicorn</div>
+                <div class="example-btn" onclick="setPrompt('surreal melting clock in desert, Salvador Dalí style')">Dalí Dream</div>
+            </div>
+        </div>
+
+        {% if error_message %}
+            <div class="error">
+                <strong>Oops!</strong> {{ error_message }}
+            </div>
+        {% endif %}
+
+        {% if not image_data and request.method == "POST" and not error_message %}
+            <div class="loading">
+                <p>Generating your masterpiece...</p>
+            </div>
+        {% endif %}
+
+        {% if image_data %}
+            <div class="result">
+                <h2>Your Creation Is Ready</h2>
+                <img src="data:image/png;base64,{{ image_data }}" alt="AI Art">
+                <br><br>
+                <a href="/" style="color:var(--primary); font-size:1.2rem; text-decoration:none;">← Create Another One</a>
+            </div>
+        {% endif %}
+
+        <footer>
+            Built with love & AI • 2025
+        </footer>
+    </div>
+
+    <script>
+        // Floating particles
+        const particlesContainer = document.getElementById('particles');
+        for(let i = 0; i < 80; i++) {
+            const p = document.createElement('div');
+            p.classList.add('particle');
+            p.style.width = p.style.height = Math.random() * 6 + 'px';
+            p.style.left = Math.random() * 100 + 'vw';
+            p.style.animationDuration = Math.random() * 20 + 15 + 's';
+            p.style.animationDelay = Math.random() * 5 + 's';
+            particlesContainer.appendChild(p);
+        }
+
+        // Example prompts
+        function setPrompt(text) {
+            document.querySelector('input[name="prompt"]').value = text;
+        }
+    </script>
+</body>
+</html>
